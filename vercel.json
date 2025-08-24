@@ -3,17 +3,14 @@
   "name": "api-key-manager",
   "builds": [
     {
-      "src": "api/vercel_handler.py",
+      "src": "index.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/vercel_handler.py"
+      "dest": "index.py"
     }
-  ],
-  "env": {
-    "PYTHON_VERSION": "3.8"
-  }
+  ]
 }
