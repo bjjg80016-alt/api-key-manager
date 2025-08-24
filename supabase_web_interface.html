@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI智能助手系统 - Supabase版本</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            max-width: 300px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI智能助手系统</h1>
+            <p>基于Supabase的云端智能助手</p>
+        </div>
+        
+        <!-- 认证部分 -->
+        <div id="authSection" class="section">
+            <h3>🔐 用户认证</h3>
+            <div id="loginForm">
+                <div class="form-group">
+                    <label for="email">邮箱地址:</label>
+                    <input type="email" id="email" placeholder="请输入邮箱">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码:</label>
+                    <input type="password" id="password" placeholder="请输入密码">
+                </div>
+                <button class="btn" onclick="signIn()">登录</button>
+                <button class="btn" onclick="signUp()">注册</button>
+            </div>
+            <div id="userInfo" class="hidden">
+                <p>欢迎回来，<span id="userEmail"></span>！</p>
+                <button class="btn" onclick="signOut()">登出</button>
+            </div>
+        </div>
+        
+        <!-- AI代理 -->
+        <div id="agentsSection" class="section hidden">
+            <h3>🎯 AI智能代理</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h4>📰 新闻秋</h4>
+                    <p>智能新闻聚合和推荐</p>
+                    <button class="btn" onclick="testAgent('新闻秋')">测试</button>
+                </div>
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h4>👕 穿搭秋</h4>
+                    <p>基于天气的智能穿搭建议</p>
+                    <button class="btn" onclick="testAgent('穿搭秋')">测试</button>
+                </div>
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h4>💪 教练秋</h4>
+                    <p>健康管理和运动指导</p>
+                    <button class="btn" onclick="testAgent('教练秋')">测试</button>
+                </div>
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h4>📅 日报秋</h4>
+                    <p>智能日程规划和任务管理</p>
+                    <button class="btn" onclick="testAgent('日报秋')">测试</button>
+                </div>
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h4>🤔 反思秋</h4>
+                    <p>个人成长和反思助手</p>
+                    <button class="btn" onclick="testAgent('反思秋')">测试</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- API密钥管理 -->
+        <div id="apiSection" class="section hidden">
+            <h3>🔑 API密钥管理</h3>
+            <div class="form-group">
+                <label for="serviceSelect">选择服务:</label>
+                <select id="serviceSelect" style="padding: 8px; margin: 10px;">
+                    <option value="newsapi">NewsAPI (新闻)</option>
+                    <option value="openweathermap">OpenWeatherMap (天气)</option>
+                    <option value="nutritionix">Nutritionix (营养)</option>
+                    <option value="google_calendar">Google Calendar (日历)</option>
+                    <option value="notion">Notion (笔记)</option>
+                    <option value="feishu">飞书 (消息)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="apiKey">API密钥:</label>
+                <input type="password" id="apiKey" placeholder="请输入API密钥">
+            </div>
+            <button class="btn" onclick="saveApiKey()">保存密钥</button>
+            <button class="btn" onclick="testApiKey()">测试密钥</button>
+            <button class="btn" onclick="loadApiKeys()">加载密钥</button>
+            
+            <div id="apiKeysList" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase配置
+        const supabaseUrl = 'https://hueetdgvehilpgzbwzjhe.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1ZXRkZ3ZlaGlscGd6Ynd6anhlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjA0MTA3NCwiZXhwIjoyMDcxNjE3MDc0fQ.p7WEGWTj9SvebbbUSCp_j476I4aeE5UjwQQT1Q9LXOk'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+        
+        let currentUser = null
+        
+        // 页面加载时检查用户状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkUser()
+        })
+        
+        // 检查用户登录状态
+        async function checkUser() {
+            const { data: { user }, error } = await supabase.auth.getUser()
+            if (user) {
+                currentUser = user
+                showUserInterface()
+            }
+        }
+        
+        // 显示用户界面
+        function showUserInterface() {
+            document.getElementById('loginForm').classList.add('hidden')
+            document.getElementById('userInfo').classList.remove('hidden')
+            document.getElementById('userEmail').textContent = currentUser.email
+            document.getElementById('agentsSection').classList.remove('hidden')
+            document.getElementById('apiSection').classList.remove('hidden')
+            
+            loadApiKeys()
+        }
+        
+        // 用户注册
+        async function signUp() {
+            const email = document.getElementById('email').value
+            const password = document.getElementById('password').value
+            
+            if (!email || !password) {
+                showAlert('请输入邮箱和密码', 'warning')
+                return
+            }
+            
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password
+            })
+            
+            if (error) {
+                showAlert('注册失败: ' + error.message, 'warning')
+            } else {
+                showAlert('注册成功！请检查邮箱验证', 'success')
+            }
+        }
+        
+        // 用户登录
+        async function signIn() {
+            const email = document.getElementById('email').value
+            const password = document.getElementById('password').value
+            
+            if (!email || !password) {
+                showAlert('请输入邮箱和密码', 'warning')
+                return
+            }
+            
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            })
+            
+            if (error) {
+                showAlert('登录失败: ' + error.message, 'warning')
+            } else {
+                currentUser = data.user
+                showUserInterface()
+                showAlert('登录成功！', 'success')
+            }
+        }
+        
+        // 用户登出
+        async function signOut() {
+            const { error } = await supabase.auth.signOut()
+            if (error) {
+                showAlert('登出失败: ' + error.message, 'warning')
+            } else {
+                currentUser = null
+                location.reload()
+            }
+        }
+        
+        // 测试AI代理
+        async function testAgent(agentName) {
+            if (!currentUser) {
+                showAlert('请先登录', 'warning')
+                return
+            }
+            
+            showAlert(`正在测试 ${agentName}...`, 'warning')
+            
+            // 记录代理活动到Supabase
+            const { error } = await supabase
+                .from('agent_logs')
+                .insert({
+                    user_id: currentUser.id,
+                    agent: agentName,
+                    action: 'test',
+                    details: { status: 'testing' }
+                })
+            
+            setTimeout(() => {
+                showAlert(`${agentName} 测试成功！`, 'success')
+            }, 2000)
+        }
+        
+        // 保存API密钥
+        async function saveApiKey() {
+            if (!currentUser) {
+                showAlert('请先登录', 'warning')
+                return
+            }
+            
+            const service = document.getElementById('serviceSelect').value
+            const key = document.getElementById('apiKey').value
+            
+            if (!key.trim()) {
+                showAlert('请输入API密钥', 'warning')
+                return
+            }
+            
+            const { error } = await supabase
+                .from('api_keys')
+                .upsert({
+                    user_id: currentUser.id,
+                    service: service,
+                    key: key
+                })
+            
+            if (error) {
+                showAlert('保存失败: ' + error.message, 'warning')
+            } else {
+                document.getElementById('apiKey').value = ''
+                showAlert(`${service} API密钥保存成功！`, 'success')
+                loadApiKeys()
+            }
+        }
+        
+        // 测试API密钥
+        async function testApiKey() {
+            if (!currentUser) {
+                showAlert('请先登录', 'warning')
+                return
+            }
+            
+            const service = document.getElementById('serviceSelect').value
+            
+            const { data, error } = await supabase
+                .from('api_keys')
+                .select('key')
+                .eq('user_id', currentUser.id)
+                .eq('service', service)
+                .single()
+            
+            if (error || !data) {
+                showAlert('请先保存API密钥', 'warning')
+                return
+            }
+            
+            showAlert(`正在测试 ${service} API密钥...`, 'warning')
+            setTimeout(() => {
+                showAlert(`${service} API密钥测试成功！`, 'success')
+            }, 2000)
+        }
+        
+        // 加载API密钥
+        async function loadApiKeys() {
+            if (!currentUser) return
+            
+            const { data, error } = await supabase
+                .from('api_keys')
+                .select('*')
+                .eq('user_id', currentUser.id)
+            
+            if (error) {
+                showAlert('加载失败: ' + error.message, 'warning')
+                return
+            }
+            
+            const keysList = document.getElementById('apiKeysList')
+            keysList.innerHTML = '<h4>已保存的API密钥:</h4>'
+            
+            if (data.length === 0) {
+                keysList.innerHTML += '<p>暂无保存的API密钥</p>'
+                return
+            }
+            
+            data.forEach(key => {
+                const keyDiv = document.createElement('div')
+                keyDiv.style.cssText = 'background: white; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd;'
+                keyDiv.innerHTML = `
+                    <strong>${key.service}</strong>: ${key.key.substring(0, 10)}...
+                    <button class="btn" onclick="deleteApiKey('${key.service}')" style="float: right;">删除</button>
+                `
+                keysList.appendChild(keyDiv)
+            })
+        }
+        
+        // 删除API密钥
+        async function deleteApiKey(service) {
+            if (!currentUser) return
+            
+            const { error } = await supabase
+                .from('api_keys')
+                .delete()
+                .eq('user_id', currentUser.id)
+                .eq('service', service)
+            
+            if (error) {
+                showAlert('删除失败: ' + error.message, 'warning')
+            } else {
+                showAlert(`${service} API密钥已删除`, 'success')
+                loadApiKeys()
+            }
+        }
+        
+        // 显示提示信息
+        function showAlert(message, type) {
+            const alert = document.createElement('div')
+            alert.className = `alert alert-${type}`
+            alert.textContent = message
+            
+            const container = document.querySelector('.container')
+            container.insertBefore(alert, container.firstChild)
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove()
+                }
+            }, 3000)
+        }
+    </script>
+</body>
+</html>

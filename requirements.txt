@@ -1,0 +1,2 @@
+# Vercel Python deployment requirements
+# No external dependencies required for our simple web interface

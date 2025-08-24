@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认证测试</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .alert { padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-error { background: #f8d7da; color: #721c24; }
+        input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 认证测试</h1>
+        
+        <div id="status">正在检查认证配置...</div>
+        
+        <h3>测试注册</h3>
+        <input type="email" id="email" placeholder="测试邮箱">
+        <input type="password" id="password" placeholder="测试密码（至少6位）">
+        <button class="btn" onclick="testSignUp()">测试注册</button>
+        
+        <h3>测试登录</h3>
+        <button class="btn" onclick="testSignIn()">测试登录</button>
+        
+        <h3>测试登出</h3>
+        <button class="btn" onclick="testSignOut()">测试登出</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Supabase配置
+        const supabaseUrl = 'https://hueetdgvehilpgzbwzjhe.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1ZXRkZ3ZlaGlscGd6Ynd6anhlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjA0MTA3NCwiZXhwIjoyMDcxNjE3MDc0fQ.p7WEGWTj9SvebbbUSCp_j476I4aeE5UjwQQT1Q9LXOk'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+        
+        // 检查认证配置
+        async function checkAuthConfig() {
+            try {
+                const { data, error } = await supabase.auth.getSession()
+                if (error) {
+                    showResult('认证配置检查失败: ' + error.message, 'error')
+                } else {
+                    showResult('认证配置正常', 'success')
+                }
+            } catch (err) {
+                showResult('认证配置异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 测试注册
+        async function testSignUp() {
+            const email = document.getElementById('email').value || 'test@example.com'
+            const password = document.getElementById('password').value || 'test123456'
+            
+            try {
+                showResult('正在测试注册...', 'info')
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password
+                })
+                
+                if (error) {
+                    showResult('注册失败: ' + error.message, 'error')
+                } else {
+                    showResult('注册成功！用户ID: ' + data.user.id, 'success')
+                }
+            } catch (err) {
+                showResult('注册异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 测试登录
+        async function testSignIn() {
+            const email = document.getElementById('email').value || 'test@example.com'
+            const password = document.getElementById('password').value || 'test123456'
+            
+            try {
+                showResult('正在测试登录...', 'info')
+                
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                })
+                
+                if (error) {
+                    showResult('登录失败: ' + error.message, 'error')
+                } else {
+                    showResult('登录成功！用户: ' + data.user.email, 'success')
+                }
+            } catch (err) {
+                showResult('登录异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 测试登出
+        async function testSignOut() {
+            try {
+                showResult('正在测试登出...', 'info')
+                
+                const { error } = await supabase.auth.signOut()
+                
+                if (error) {
+                    showResult('登出失败: ' + error.message, 'error')
+                } else {
+                    showResult('登出成功！', 'success')
+                }
+            } catch (err) {
+                showResult('登出异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 显示结果
+        function showResult(message, type) {
+            const result = document.getElementById('result')
+            result.innerHTML = `<div class="alert alert-${type}">${message}</div>`
+        }
+        
+        // 页面加载时检查配置
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthConfig()
+        })
+    </script>
+</body>
+</html>

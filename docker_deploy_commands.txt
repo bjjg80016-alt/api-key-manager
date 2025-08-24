@@ -1,0 +1,24 @@
+# 🐳 Docker部署命令
+
+# 1. 构建Docker镜像
+docker build -t ai-assistant-system .
+
+# 2. 运行Docker容器
+docker run -d -p 8000:8000 --name ai-assistant ai-assistant-system
+
+# 3. 查看容器状态
+docker ps
+
+# 4. 查看容器日志
+docker logs ai-assistant
+
+# 5. 停止容器
+docker stop ai-assistant
+
+# 6. 删除容器
+docker rm ai-assistant
+
+# 7. 删除镜像
+docker rmi ai-assistant-system
+
+# 访问地址：http://localhost:8000/supabase_web_interface.html

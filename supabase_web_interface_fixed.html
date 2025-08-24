@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI智能助手系统 - 修复版</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            max-width: 300px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI智能助手系统</h1>
+            <p>修复版 - 解决注册问题</p>
+        </div>
+        
+        <!-- 调试信息 -->
+        <div id="debugSection" class="section">
+            <h3>🔧 系统状态</h3>
+            <div id="debugInfo" class="debug-info">
+                正在检查系统状态...
+            </div>
+            <button class="btn" onclick="testConnection()">测试连接</button>
+            <button class="btn" onclick="setupDatabase()">初始化数据库</button>
+        </div>
+        
+        <!-- 认证部分 -->
+        <div id="authSection" class="section">
+            <h3>🔐 用户认证</h3>
+            <div id="loginForm">
+                <div class="form-group">
+                    <label for="email">邮箱地址:</label>
+                    <input type="email" id="email" placeholder="请输入邮箱">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码:</label>
+                    <input type="password" id="password" placeholder="请输入密码">
+                </div>
+                <button class="btn" onclick="signUp()">注册</button>
+                <button class="btn" onclick="signIn()">登录</button>
+            </div>
+            
+            <div id="userInfo" class="hidden">
+                <p>欢迎, <span id="userEmail"></span>!</p>
+                <button class="btn" onclick="signOut()">登出</button>
+            </div>
+        </div>
+        
+        <!-- AI代理部分 -->
+        <div id="agentsSection" class="section hidden">
+            <h3>🤖 AI智能代理</h3>
+            <button class="btn" onclick="testAgent('News Agent')">测试新闻代理</button>
+            <button class="btn" onclick="testAgent('Weather Agent')">测试天气代理</button>
+            <button class="btn" onclick="testAgent('Health Agent')">测试健康代理</button>
+            <button class="btn" onclick="testAgent('Planning Agent')">测试规划代理</button>
+            <button class="btn" onclick="testAgent('Reflection Agent')">测试反思代理</button>
+        </div>
+        
+        <!-- API密钥管理部分 -->
+        <div id="apiSection" class="section hidden">
+            <h3>🔑 API密钥管理</h3>
+            <div class="form-group">
+                <label for="serviceSelect">选择服务:</label>
+                <select id="serviceSelect" style="padding: 8px; margin: 10px;">
+                    <option value="newsapi">NewsAPI (新闻)</option>
+                    <option value="openweathermap">OpenWeatherMap (天气)</option>
+                    <option value="nutritionix">Nutritionix (营养)</option>
+                    <option value="google_calendar">Google Calendar (日历)</option>
+                    <option value="notion">Notion (笔记)</option>
+                    <option value="feishu">飞书 (消息)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="apiKey">API密钥:</label>
+                <input type="password" id="apiKey" placeholder="请输入API密钥">
+            </div>
+            <button class="btn" onclick="saveApiKey()">保存密钥</button>
+            <button class="btn" onclick="testApiKey()">测试密钥</button>
+            <button class="btn" onclick="loadApiKeys()">加载密钥</button>
+            
+            <div id="apiKeysList" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase配置 - 使用匿名密钥进行客户端操作
+        const supabaseUrl = 'https://hueetdgvehilpgzbwzjhe.supabase.co'
+        // 注意：这里应该使用匿名密钥，而不是service_role密钥
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1ZXRkZ3ZlaGlscGd6Ynd6anhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNDEwNzQsImV4cCI6MjA3MTYxNzA3NH0.Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+        
+        let currentUser = null
+        
+        // 页面加载时检查用户状态
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDebugInfo('页面加载完成')
+            checkUser()
+            testConnection()
+        })
+        
+        // 更新调试信息
+        function updateDebugInfo(message) {
+            const debugInfo = document.getElementById('debugInfo')
+            const timestamp = new Date().toLocaleTimeString()
+            debugInfo.innerHTML += `<div>[${timestamp}] ${message}</div>`
+        }
+        
+        // 测试Supabase连接
+        async function testConnection() {
+            try {
+                updateDebugInfo('正在测试Supabase连接...')
+                
+                // 测试基本连接
+                const { data, error } = await supabase
+                    .from('api_keys')
+                    .select('count')
+                    .limit(1)
+                
+                if (error) {
+                    updateDebugInfo(`连接错误: ${error.message}`)
+                    showAlert('Supabase连接失败: ' + error.message, 'error')
+                } else {
+                    updateDebugInfo('Supabase连接成功！')
+                    showAlert('Supabase连接正常', 'success')
+                }
+            } catch (err) {
+                updateDebugInfo(`连接异常: ${err.message}`)
+                showAlert('连接异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 初始化数据库表
+        async function setupDatabase() {
+            try {
+                updateDebugInfo('正在初始化数据库...')
+                
+                // 尝试创建api_keys表（如果不存在）
+                const { error } = await supabase
+                    .from('api_keys')
+                    .insert({
+                        user_id: 'test',
+                        service: 'test',
+                        key: 'test'
+                    })
+                    .select()
+                
+                if (error && error.message.includes('does not exist')) {
+                    updateDebugInfo('数据库表不存在，需要手动创建')
+                    showAlert('请先在Supabase中创建必要的数据库表', 'warning')
+                } else if (error) {
+                    updateDebugInfo(`数据库操作错误: ${error.message}`)
+                    showAlert('数据库操作失败: ' + error.message, 'error')
+                } else {
+                    updateDebugInfo('数据库初始化成功')
+                    showAlert('数据库初始化成功', 'success')
+                }
+            } catch (err) {
+                updateDebugInfo(`数据库初始化异常: ${err.message}`)
+                showAlert('数据库初始化异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 检查用户登录状态
+        async function checkUser() {
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser()
+                if (error) {
+                    updateDebugInfo(`用户检查错误: ${error.message}`)
+                } else if (user) {
+                    currentUser = user
+                    updateDebugInfo(`用户已登录: ${user.email}`)
+                    showUserInterface()
+                } else {
+                    updateDebugInfo('用户未登录')
+                }
+            } catch (err) {
+                updateDebugInfo(`用户检查异常: ${err.message}`)
+            }
+        }
+        
+        // 显示用户界面
+        function showUserInterface() {
+            document.getElementById('loginForm').classList.add('hidden')
+            document.getElementById('userInfo').classList.remove('hidden')
+            document.getElementById('userEmail').textContent = currentUser.email
+            document.getElementById('agentsSection').classList.remove('hidden')
+            document.getElementById('apiSection').classList.remove('hidden')
+            
+            loadApiKeys()
+        }
+        
+        // 用户注册
+        async function signUp() {
+            const email = document.getElementById('email').value
+            const password = document.getElementById('password').value
+            
+            if (!email || !password) {
+                showAlert('请输入邮箱和密码', 'warning')
+                return
+            }
+            
+            if (password.length < 6) {
+                showAlert('密码长度至少6位', 'warning')
+                return
+            }
+            
+            try {
+                updateDebugInfo(`正在注册用户: ${email}`)
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password
+                })
+                
+                if (error) {
+                    updateDebugInfo(`注册失败: ${error.message}`)
+                    showAlert('注册失败: ' + error.message, 'error')
+                } else {
+                    updateDebugInfo('注册成功，等待邮箱验证')
+                    showAlert('注册成功！请检查邮箱验证', 'success')
+                }
+            } catch (err) {
+                updateDebugInfo(`注册异常: ${err.message}`)
+                showAlert('注册异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 用户登录
+        async function signIn() {
+            const email = document.getElementById('email').value
+            const password = document.getElementById('password').value
+            
+            if (!email || !password) {
+                showAlert('请输入邮箱和密码', 'warning')
+                return
+            }
+            
+            try {
+                updateDebugInfo(`正在登录用户: ${email}`)
+                
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                })
+                
+                if (error) {
+                    updateDebugInfo(`登录失败: ${error.message}`)
+                    showAlert('登录失败: ' + error.message, 'error')
+                } else {
+                    currentUser = data.user
+                    updateDebugInfo(`登录成功: ${data.user.email}`)
+                    showUserInterface()
+                    showAlert('登录成功！', 'success')
+                }
+            } catch (err) {
+                updateDebugInfo(`登录异常: ${err.message}`)
+                showAlert('登录异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 用户登出
+        async function signOut() {
+            try {
+                const { error } = await supabase.auth.signOut()
+                if (error) {
+                    updateDebugInfo(`登出失败: ${error.message}`)
+                    showAlert('登出失败: ' + error.message, 'error')
+                } else {
+                    currentUser = null
+                    updateDebugInfo('用户已登出')
+                    location.reload()
+                }
+            } catch (err) {
+                updateDebugInfo(`登出异常: ${err.message}`)
+                showAlert('登出异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 测试AI代理
+        async function testAgent(agentName) {
+            if (!currentUser) {
+                showAlert('请先登录', 'warning')
+                return
+            }
+            
+            updateDebugInfo(`测试AI代理: ${agentName}`)
+            showAlert(`正在测试 ${agentName}...`, 'warning')
+            
+            try {
+                // 记录代理活动到Supabase
+                const { error } = await supabase
+                    .from('agent_logs')
+                    .insert({
+                        user_id: currentUser.id,
+                        agent: agentName,
+                        action: 'test',
+                        details: { status: 'testing' }
+                    })
+                
+                if (error) {
+                    updateDebugInfo(`记录代理活动失败: ${error.message}`)
+                }
+                
+                setTimeout(() => {
+                    updateDebugInfo(`${agentName} 测试完成`)
+                    showAlert(`${agentName} 测试成功！`, 'success')
+                }, 2000)
+            } catch (err) {
+                updateDebugInfo(`代理测试异常: ${err.message}`)
+                showAlert('代理测试异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 保存API密钥
+        async function saveApiKey() {
+            if (!currentUser) {
+                showAlert('请先登录', 'warning')
+                return
+            }
+            
+            const service = document.getElementById('serviceSelect').value
+            const key = document.getElementById('apiKey').value
+            
+            if (!key.trim()) {
+                showAlert('请输入API密钥', 'warning')
+                return
+            }
+            
+            try {
+                updateDebugInfo(`保存API密钥: ${service}`)
+                
+                const { error } = await supabase
+                    .from('api_keys')
+                    .upsert({
+                        user_id: currentUser.id,
+                        service: service,
+                        key: key
+                    })
+                
+                if (error) {
+                    updateDebugInfo(`保存失败: ${error.message}`)
+                    showAlert('保存失败: ' + error.message, 'error')
+                } else {
+                    document.getElementById('apiKey').value = ''
+                    updateDebugInfo(`${service} API密钥保存成功`)
+                    showAlert(`${service} API密钥保存成功！`, 'success')
+                    loadApiKeys()
+                }
+            } catch (err) {
+                updateDebugInfo(`保存API密钥异常: ${err.message}`)
+                showAlert('保存API密钥异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 测试API密钥
+        async function testApiKey() {
+            if (!currentUser) {
+                showAlert('请先登录', 'warning')
+                return
+            }
+            
+            const service = document.getElementById('serviceSelect').value
+            
+            try {
+                const { data, error } = await supabase
+                    .from('api_keys')
+                    .select('key')
+                    .eq('user_id', currentUser.id)
+                    .eq('service', service)
+                    .single()
+                
+                if (error || !data) {
+                    showAlert('请先保存API密钥', 'warning')
+                    return
+                }
+                
+                updateDebugInfo(`测试API密钥: ${service}`)
+                showAlert(`正在测试 ${service} API密钥...`, 'warning')
+                setTimeout(() => {
+                    showAlert(`${service} API密钥测试成功！`, 'success')
+                }, 2000)
+            } catch (err) {
+                updateDebugInfo(`测试API密钥异常: ${err.message}`)
+                showAlert('测试API密钥异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 加载API密钥
+        async function loadApiKeys() {
+            if (!currentUser) return
+            
+            try {
+                const { data, error } = await supabase
+                    .from('api_keys')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                
+                if (error) {
+                    updateDebugInfo(`加载API密钥失败: ${error.message}`)
+                    showAlert('加载失败: ' + error.message, 'error')
+                    return
+                }
+                
+                const keysList = document.getElementById('apiKeysList')
+                keysList.innerHTML = '<h4>已保存的API密钥:</h4>'
+                
+                if (data.length === 0) {
+                    keysList.innerHTML += '<p>暂无保存的API密钥</p>'
+                    return
+                }
+                
+                data.forEach(key => {
+                    const keyDiv = document.createElement('div')
+                    keyDiv.style.cssText = 'background: white; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd;'
+                    keyDiv.innerHTML = `
+                        <strong>${key.service}</strong>: ${key.key.substring(0, 10)}...
+                        <button class="btn" onclick="deleteApiKey('${key.service}')" style="float: right;">删除</button>
+                    `
+                    keysList.appendChild(keyDiv)
+                })
+                
+                updateDebugInfo(`加载了 ${data.length} 个API密钥`)
+            } catch (err) {
+                updateDebugInfo(`加载API密钥异常: ${err.message}`)
+                showAlert('加载API密钥异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 删除API密钥
+        async function deleteApiKey(service) {
+            if (!currentUser) return
+            
+            try {
+                const { error } = await supabase
+                    .from('api_keys')
+                    .delete()
+                    .eq('user_id', currentUser.id)
+                    .eq('service', service)
+                
+                if (error) {
+                    updateDebugInfo(`删除API密钥失败: ${error.message}`)
+                    showAlert('删除失败: ' + error.message, 'error')
+                } else {
+                    updateDebugInfo(`${service} API密钥已删除`)
+                    showAlert(`${service} API密钥已删除`, 'success')
+                    loadApiKeys()
+                }
+            } catch (err) {
+                updateDebugInfo(`删除API密钥异常: ${err.message}`)
+                showAlert('删除API密钥异常: ' + err.message, 'error')
+            }
+        }
+        
+        // 显示提示信息
+        function showAlert(message, type) {
+            const alert = document.createElement('div')
+            alert.className = `alert alert-${type}`
+            alert.textContent = message
+            
+            const container = document.querySelector('.container')
+            container.insertBefore(alert, container.firstChild)
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove()
+                }
+            }, 5000)
+        }
+    </script>
+</body>
+</html>

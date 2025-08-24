@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI智能助手系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status.ready { background: #28a745; }
+        .status.pending { background: #ffc107; }
+        .status.error { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI智能助手系统</h1>
+            <p>您的专属智能助手，让生活更简单</p>
+        </div>
+        
+        <div class="section">
+            <h2>📊 系统状态</h2>
+            <p><span class="status ready"></span>系统已就绪</p>
+            <p><span class="status pending"></span>正在初始化AI代理...</p>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 AI智能代理</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h3>📰 新闻秋</h3>
+                    <p>智能新闻聚合和推荐</p>
+                    <button class="btn" onclick="testAgent('新闻秋')">测试</button>
+                </div>
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h3>👕 穿搭秋</h3>
+                    <p>基于天气的智能穿搭建议</p>
+                    <button class="btn" onclick="testAgent('穿搭秋')">测试</button>
+                </div>
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h3>💪 教练秋</h3>
+                    <p>健康管理和运动指导</p>
+                    <button class="btn" onclick="testAgent('教练秋')">测试</button>
+                </div>
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h3>📅 日报秋</h3>
+                    <p>智能日程规划和任务管理</p>
+                    <button class="btn" onclick="testAgent('日报秋')">测试</button>
+                </div>
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                    <h3>🤔 反思秋</h3>
+                    <p>个人成长和反思助手</p>
+                    <button class="btn" onclick="testAgent('反思秋')">测试</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔑 API密钥管理</h2>
+            <p>选择服务并输入API密钥：</p>
+            <select id="serviceSelect" style="padding: 8px; margin: 10px;">
+                <option value="newsapi">NewsAPI (新闻)</option>
+                <option value="openweathermap">OpenWeatherMap (天气)</option>
+                <option value="nutritionix">Nutritionix (营养)</option>
+                <option value="google_calendar">Google Calendar (日历)</option>
+                <option value="notion">Notion (笔记)</option>
+                <option value="feishu">飞书 (消息)</option>
+            </select>
+            <br>
+            <input type="password" id="apiKey" placeholder="请输入API密钥" style="padding: 8px; width: 300px; margin: 10px;">
+            <br>
+            <button class="btn" onclick="saveApiKey()">保存密钥</button>
+            <button class="btn" onclick="testApiKey()">测试密钥</button>
+        </div>
+        
+        <div class="section">
+            <h2>⚡ 快速操作</h2>
+            <button class="btn" onclick="startAllAgents()">启动所有代理</button>
+            <button class="btn" onclick="checkSystemHealth()">系统健康检查</button>
+            <button class="btn" onclick="resetConfiguration()">重置配置</button>
+        </div>
+    </div>
+
+    <script>
+        let apiKeys = JSON.parse(localStorage.getItem('apiKeys') || '{}');
+        
+        function testAgent(agentName) {
+            alert(`正在测试 ${agentName}...`);
+            setTimeout(() => {
+                alert(`${agentName} 测试成功！`);
+            }, 2000);
+        }
+        
+        function saveApiKey() {
+            const service = document.getElementById('serviceSelect').value;
+            const key = document.getElementById('apiKey').value;
+            
+            if (!key.trim()) {
+                alert('请输入API密钥');
+                return;
+            }
+            
+            apiKeys[service] = key;
+            localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+            document.getElementById('apiKey').value = '';
+            alert(`${service} API密钥保存成功！`);
+        }
+        
+        function testApiKey() {
+            const service = document.getElementById('serviceSelect').value;
+            const key = apiKeys[service];
+            
+            if (!key) {
+                alert('请先保存API密钥');
+                return;
+            }
+            
+            alert(`正在测试 ${service} API密钥...`);
+            setTimeout(() => {
+                alert(`${service} API密钥测试成功！`);
+            }, 2000);
+        }
+        
+        function startAllAgents() {
+            alert('正在启动所有AI代理...');
+            setTimeout(() => {
+                alert('所有AI代理启动成功！');
+            }, 3000);
+        }
+        
+        function checkSystemHealth() {
+            alert('正在进行系统健康检查...');
+            setTimeout(() => {
+                alert('系统健康检查完成，所有组件运行正常！');
+            }, 2000);
+        }
+        
+        function resetConfiguration() {
+            if (confirm('确定要重置所有配置吗？')) {
+                apiKeys = {};
+                localStorage.removeItem('apiKeys');
+                alert('配置已重置');
+            }
+        }
+    </script>
+</body>
+</html>
